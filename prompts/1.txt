@@ -1,3 +1,0 @@
-Please write a Golang, Python, JavaScript, and HTML/CSS program for me that consists of a left and right panel. The left panel should contain Lipsem text. The right panel should contain a CodeMirror widget. The CodeMirror widget should allow tab characters to be entered. There should be a Submit button that POSTs the code to the Go webserver. The Go webserver should execute the Python code and return the results to the browser.
-
-
