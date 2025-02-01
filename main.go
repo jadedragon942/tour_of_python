@@ -4,7 +4,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -25,11 +25,14 @@ func executePythonCode(code string) (string, error) {
 		return "", err
 	}
 
-	cmd := exec.Command("python3", tmpfile.Name())
+	cmd := exec.Command("python3", "./sandbox.py", tmpfile.Name())
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 	err = cmd.Run()
+	log.Printf("CODE:%s\n", code)
+	log.Printf("STDOUT:%s\n", out.String())
+	log.Printf("STDERR:%s\n", stderr.String())
 	if err != nil {
 		return stderr.String(), err
 	}
@@ -38,7 +41,7 @@ func executePythonCode(code string) (string, error) {
 
 func codeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "Unable to read request body", http.StatusBadRequest)
 			return
