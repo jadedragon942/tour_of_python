@@ -88,8 +88,15 @@ func tourHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slidePath := filepath.Join("slides", fmt.Sprintf("%d", slideNumber))
+	titlePath := filepath.Join(slidePath, "title")
 	markdownPath := filepath.Join(slidePath, "markdown")
 	pythonPath := filepath.Join(slidePath, "script.py")
+
+	titleContent, err := os.ReadFile(titlePath)
+	if err != nil {
+		http.Error(w, "Title file not found", http.StatusNotFound)
+		return
+	}
 
 	markdownContent, err := os.ReadFile(markdownPath)
 	if err != nil {
@@ -106,9 +113,11 @@ func tourHandler(w http.ResponseWriter, r *http.Request) {
 	htmlContent := markdown.ToHTML(markdownContent, nil, nil)
 
 	data := struct {
+		Title        string
 		MarkdownHTML template.HTML
 		PythonCode   string
 	}{
+		Title:        string(titleContent),
 		MarkdownHTML: template.HTML(htmlContent),
 		PythonCode:   string(pythonContent),
 	}
