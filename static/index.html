@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Executor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #left-panel, #right-panel {
+            flex: 1;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #left-panel {
+            background-color: #f4f4f4;
+            border-right: 1px solid #ccc;
+        }
+        #right-panel {
+            display: flex;
+            flex-direction: column;
+        }
+        #editor {
+            flex: 1;
+            border: 1px solid #ccc;
+        }
+        #submit-btn {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #submit-btn:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 10px;
+            white-space: pre-wrap;
+            background-color: #eee;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="left-panel">
+        <h2>Lipsem Text</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    </div>
+    <div id="right-panel">
+        <textarea id="editor"></textarea>
+        <button id="submit-btn">Submit</button>
+        <div id="output"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+    <script>
+        const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+            mode: "python",
+            lineNumbers: true,
+	    indentUnit: 4,
+            extraKeys: {
+                Tab: function(cm) {
+                    if (cm.somethingSelected()) {
+                        cm.indentSelection("add");
+                    } else {
+                        cm.replaceSelection("    ", "end");
+                    }
+                }
+            }
+        });
+
+        document.getElementById('submit-btn').addEventListener('click', function() {
+            const code = editor.getValue();
+            fetch('/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: code
+            })
+            .then(response => response.text())
+            .then(result => {
+                document.getElementById('output').textContent = result;
+            })
+            .catch(error => {
+                document.getElementById('output').textContent = 'Error: ' + error;
+            });
+        });
+    </script>
+</body>
+</html>
+
