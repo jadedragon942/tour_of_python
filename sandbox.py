@@ -2,25 +2,34 @@
 import sys
 import resource
 import pyseccomp as seccomp
+import errno
 
-MEMORY_LIMIT = 64 * 1024 * 1024  # 64kb
-CPU_TIME_LIMIT = 1  # 1sec
-WRITE_LIMIT = 512  # 512bytes
+MEMORY_LIMIT = 16 * 1024 * 1024  # 16 MB
+
+CPU_TIME_LIMIT = 10  # 10sec
+WRITE_LIMIT = 16384  # 16K
 
 def drop_perms():
-    # respond with EPERM: operation not permitted so users can tell
-    # they're being blocked from doing something
-    filter = seccomp.SyscallFilter(seccomp.ERRNO(seccomp.errno.EPERM))
+    # Default action: return EPERM on disallowed syscalls
+    filter = seccomp.SyscallFilter(seccomp.ERRNO(errno.EPERM))
 
-    # allow `write`ing to two already-opened files stdout and stderr
-    filter.add_rule(
-        seccomp.ALLOW, "write", seccomp.Arg(0, seccomp.EQ, sys.stdout.fileno())
-    )
-    filter.add_rule(
-        seccomp.ALLOW, "write", seccomp.Arg(0, seccomp.EQ, sys.stderr.fileno())
-    )
+    # Allow essential syscalls
+    filter.add_rule(seccomp.ALLOW, "exit")
+    filter.add_rule(seccomp.ALLOW, "exit_group")
+    filter.add_rule(seccomp.ALLOW, "read")
+    filter.add_rule(seccomp.ALLOW, "fstat")
+    filter.add_rule(seccomp.ALLOW, "mmap")
+    filter.add_rule(seccomp.ALLOW, "mprotect")
+    filter.add_rule(seccomp.ALLOW, "munmap")
+    filter.add_rule(seccomp.ALLOW, "brk")
 
-    # load the filter in the kernel
+    # Allow writing to stdout and stderr
+    stdout_fd = sys.stdout.fileno()
+    stderr_fd = sys.stderr.fileno()
+    filter.add_rule(seccomp.ALLOW, "write", seccomp.Arg(0, seccomp.EQ, stdout_fd))
+    filter.add_rule(seccomp.ALLOW, "write", seccomp.Arg(0, seccomp.EQ, stderr_fd))
+
+    # Apply the filter
     filter.load()
 
 

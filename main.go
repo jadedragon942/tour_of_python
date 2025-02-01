@@ -34,6 +34,7 @@ func executePythonCode(code string) (string, error) {
 	log.Printf("STDOUT:%s\n", out.String())
 	log.Printf("STDERR:%s\n", stderr.String())
 	if err != nil {
+		log.Printf("ERR:%s\n", err.Error())
 		return stderr.String(), err
 	}
 	return out.String(), nil
