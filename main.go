@@ -9,35 +9,34 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 func executePythonCode(code string) (string, error) {
-	tmpfile, err := os.CreateTemp("", "code-*.py")
-	if err != nil {
-		return "", err
-	}
-	defer os.Remove(tmpfile.Name())
+    tmpfile, err := os.CreateTemp("/tmp", "code-*.py")
+    if err != nil {
+        return "", err
+    }
+    defer os.Remove(tmpfile.Name())
 
-	if _, err := tmpfile.Write([]byte(code)); err != nil {
-		return "", err
-	}
-	if err := tmpfile.Close(); err != nil {
-		return "", err
-	}
+    if _, err := tmpfile.Write([]byte(code)); err != nil {
+        return "", err
+    }
+    if err := tmpfile.Close(); err != nil {
+        return "", err
+    }
 
-	cmd := exec.Command("python3", "./sandbox.py", tmpfile.Name())
-	var out, stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	log.Printf("CODE:%s\n", code)
-	log.Printf("STDOUT:%s\n", out.String())
-	log.Printf("STDERR:%s\n", stderr.String())
-	if err != nil {
-		log.Printf("ERR:%s\n", err.Error())
-		return stderr.String(), err
-	}
-	return out.String(), nil
+    tmpDir := filepath.Dir(tmpfile.Name())
+    cmd := exec.Command("podman", "run", "--rm", fmt.Sprintf("%s:/scripts", tmpDir), "-w", "/scripts", "python:3.11", "python", filepath.Base(tmpfile.Name()))
+
+    var out, stderr bytes.Buffer
+    cmd.Stdout = &out
+    cmd.Stderr = &stderr
+    err = cmd.Run()
+    if err != nil {
+        return stderr.String(), err
+    }
+    return out.String(), nil
 }
 
 func codeHandler(w http.ResponseWriter, r *http.Request) {
