@@ -27,7 +27,7 @@ func executePythonCode(code string) (string, error) {
     }
 
     tmpDir := filepath.Dir(tmpfile.Name())
-    cmd := exec.Command("podman", "run", "--rm", fmt.Sprintf("%s:/scripts", tmpDir), "-w", "/scripts", "python:3.11", "python", filepath.Base(tmpfile.Name()))
+    cmd := exec.Command("podman", "run", "--rm", "-v", fmt.Sprintf("%s:/scripts", tmpDir), "-w", "/scripts", "python:3.11", "python", filepath.Base(tmpfile.Name()))
 
     var out, stderr bytes.Buffer
     cmd.Stdout = &out
