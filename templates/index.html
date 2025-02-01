@@ -51,11 +51,11 @@
 </head>
 <body>
     <div id="left-panel">
-        <h2>Lipsem Text</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <h2>Slide Content</h2>
+        <div>{{ .MarkdownHTML }}</div>
     </div>
     <div id="right-panel">
-        <textarea id="editor"></textarea>
+        <textarea id="editor">{{ .PythonCode }}</textarea>
         <button id="submit-btn">Submit</button>
         <div id="output"></div>
     </div>
@@ -66,7 +66,7 @@
         const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
             mode: "python",
             lineNumbers: true,
-	    indentUnit: 4,
+            indentUnit: 4,
             extraKeys: {
                 Tab: function(cm) {
                     if (cm.somethingSelected()) {
@@ -75,7 +75,7 @@
                         cm.replaceSelection("    ", "end");
                     }
                 },
-		"Shift-Enter": function() {
+                "Shift-Enter": function() {
                     document.getElementById('submit-btn').click();
                 }
             }
@@ -99,4 +99,3 @@
     </script>
 </body>
 </html>
-
