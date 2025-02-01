@@ -106,10 +106,10 @@ func tourHandler(w http.ResponseWriter, r *http.Request) {
 	htmlContent := markdown.ToHTML(markdownContent, nil, nil)
 
 	data := struct {
-		MarkdownHTML string
+		MarkdownHTML template.HTML
 		PythonCode   string
 	}{
-		MarkdownHTML: string(htmlContent),
+		MarkdownHTML: template.HTML(htmlContent),
 		PythonCode:   string(pythonContent),
 	}
 
