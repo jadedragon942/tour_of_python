@@ -1,8 +1,8 @@
 // main.go
 package main
-
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -23,8 +23,72 @@ var templates = template.Must(template.New("index.html").Funcs(template.FuncMap{
 	},
 }).ParseFiles("templates/index.html"))
 
+func sendCodeToAxiom(code, stdout, stderr string) error {
+	axiomKey := os.Getenv("AXIOM_KEY")
+	if axiomKey == "" {
+		panic("please specify AXIOM_KEY")
+	}
+	axiomDataset := os.Getenv("AXIOM_DATASET")
+	if axiomDataset == "" {
+		panic("please specify AXIOM_DATASET")
+	}
+
+	payload := []map[string]interface{}{
+		{
+			"data": map[string]string{
+				"code":   code,
+				"stdout": stdout,
+				"stderr": stderr,
+			},
+		},
+	}
+
+	// Marshal the payload into JSON.
+	body, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("Error marshaling JSON: %v", err)
+		return fmt.Errorf("Error marshaling JSON: %v", err)
+	}
+
+	// Construct the ingest URL.
+	url := fmt.Sprintf("https://api.axiom.co/v1/datasets/%s/ingest", axiomDataset)
+
+	// Create a new HTTP request.
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		log.Printf("Error creating request: %v", err)
+		return fmt.Errorf("error creating request: %v", err)
+	}
+
+	// Set the required headers: Authorization and Content-Type.
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", axiomKey))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send the request using the default HTTP client (you could configure your own).
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("Error performing request: %v", err)
+		return fmt.Errorf("error performing request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Optionally, handle non-OK status codes or read response body here.
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		log.Printf("Non-2xx status code received: %d\n", resp.StatusCode)
+		// You could read and log resp.Body for details.
+		return fmt.Errorf("non-2xx status code received: %d\n", resp.StatusCode)
+	}
+
+	return nil
+}
+
 func executePythonCode(code string) (string, error) {
 	log.Printf("Executing Python Code:\n%s", code)
+
+	err := sendCodeToAxiom(code, "", "")
+	if err != nil {
+		return "", err
+	}
 
 	tmpfile, err := os.CreateTemp("", "code-*.py")
 	if err != nil {
@@ -47,6 +111,11 @@ func executePythonCode(code string) (string, error) {
 
 	log.Printf("Stdout:\n%s", out.String())
 	log.Printf("Stderr:\n%s", stderr.String())
+
+	err = sendCodeToAxiom(code, out.String(), stderr.String())
+	if err != nil {
+		return "", err
+	}
 
 	if err != nil {
 		return stderr.String(), err
@@ -135,6 +204,6 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	log.Println("Server started at :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Server started at :9000")
+	log.Fatal(http.ListenAndServe("127.0.0.1:9000", nil))
 }
