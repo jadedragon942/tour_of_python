@@ -202,6 +202,6 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	log.Println("Server started at :9000")
+	log.Println("Server started at 127.0.0.1:9000")
 	log.Fatal(http.ListenAndServe("127.0.0.1:9000", nil))
 }
