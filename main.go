@@ -25,12 +25,10 @@ var templates = template.Must(template.New("index.html").Funcs(template.FuncMap{
 
 func sendCodeToAxiom(code, stdout, stderr string) error {
 	axiomKey := os.Getenv("AXIOM_KEY")
-	if axiomKey == "" {
-		panic("please specify AXIOM_KEY")
-	}
 	axiomDataset := os.Getenv("AXIOM_DATASET")
-	if axiomDataset == "" {
-		panic("please specify AXIOM_DATASET")
+	if axiomKey == "" || axiomDataset == "" {
+		log.Printf("please specify AXIOM_KEY and AXIOM_DATASET as environment variables to enable axiom logging")
+		return nil
 	}
 
 	payload := []map[string]interface{}{
