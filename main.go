@@ -158,7 +158,7 @@ func tourHandler(w http.ResponseWriter, r *http.Request) {
 
 	slidePath := filepath.Join("slides", fmt.Sprintf("%d", slideNumber))
 	titlePath := filepath.Join(slidePath, "title")
-	markdownPath := filepath.Join(slidePath, "markdown")
+	markdownPath := filepath.Join(slidePath, "content.md")
 	pythonPath := filepath.Join(slidePath, "script.py")
 
 	titleContent, err := os.ReadFile(titlePath)

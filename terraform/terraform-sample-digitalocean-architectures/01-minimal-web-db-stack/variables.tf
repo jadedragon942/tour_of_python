@@ -29,7 +29,7 @@ variable domain_name {
 # Name of your project. Will be prepended to most resources
 variable "name" {
     type = string
-    default = "tourofpython-vpc"
+    default = "tourofpython1-vpc"
 }
 # The region to deploy our infrastructure to.
 variable "region" {
