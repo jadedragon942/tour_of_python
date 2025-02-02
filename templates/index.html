@@ -51,6 +51,8 @@
 </head>
 <body>
     <script>
+	const maxSlides = 2; // TODO 
+
 	function getCurrentSlideNumber() {
 		const path = window.location.pathname;
 
@@ -79,7 +81,10 @@
 		}
 	}
 	function gotoNextSlide() {
-		gotoSlide(getCurrentSlideNumber() + 1)
+		const slideNum = getCurrentSlideNumber() + 1
+		if (slideNum <= maxSlides) {
+			gotoSlide(slideNum)
+		}
 	}
 
     </script>
