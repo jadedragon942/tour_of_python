@@ -7,7 +7,7 @@ import errno
 MEMORY_LIMIT = 16 * 1024 * 1024  # 16 MB
 
 CPU_TIME_LIMIT = 10  # 10sec
-WRITE_LIMIT = 16384  # 16K
+WRITE_LIMIT = 16 * 1024 * 1024  # 16 MB
 
 def drop_perms():
     # Default action: return EPERM on disallowed syscalls
@@ -35,7 +35,7 @@ def drop_perms():
 
 def set_mem_limit():
     # virtual memory
-    resource.setrlimit(resource.RLIMIT_AS, (MEMORY_LIMIT, MEMORY_LIMIT))
+    # resource.setrlimit(resource.RLIMIT_AS, (MEMORY_LIMIT, MEMORY_LIMIT))
     # cpu time
     resource.setrlimit(resource.RLIMIT_CPU, (CPU_TIME_LIMIT, CPU_TIME_LIMIT))
     # write limit i.e. don't allow an infinite stream to stdout/stderr
