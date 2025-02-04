@@ -16,8 +16,10 @@ go run main.go
 
 # CREDIT
 
-ChatGPT for giving me a nice starting point of code
+ChatGPT for giving me a nice starting point of code.
 
-healeycodes for the awesome sandbox implementation and logging ideas
+healeycodes for the awesome sandbox implementation and logging ideas.
 
-Tour of Go for the general idea to build an in-browser REPL and interactive learning playground
+Tour of Go for the general idea to build an in-browser REPL and interactive learning playground.
+
+Whirlwind Tour of Python for having such a permissive license.
