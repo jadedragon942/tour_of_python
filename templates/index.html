@@ -66,11 +66,6 @@
 		// Convert the last segment to a number
 		const currentPage = parseInt(lastSegment, 10);
 
-		if (!isNaN(currentPage)) {
-			console.log("Current page is not a number:", currentPage);
-		} else {
-			console.log("No valid page number found at the end of the URL.");
-		}
 		return currentPage;
 	}
 	function gotoSlide(slideNum) {
@@ -93,7 +88,7 @@
     <div id="left-panel">
         <h2>{{ .Title }}</h2>
         <div>{{ .MarkdownHTML }}</div>
-	<div align="center"> <a href="/tour/welcome/1">&lt;</a> <b>1/2</b> <a href="/tour/welcome/2">&gt;</a> </div>
+	<div align="center"> <a href="#" onclick="gotoPreviousSlide(); return false;">&lt;</a> <b>1/2</b> <a href="#" onclick="gotoNextSlide(); return false;">&gt;</a> </div>
     </div>
     <div id="right-panel">
         <textarea id="editor">{{ .PythonCode }}</textarea>
