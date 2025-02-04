@@ -6,3 +6,6 @@ This leads some to claim erroneously that Python is a type-free language. But
 this is not the case! 
 
 Consider the following code on the right.
+
+Python has types; however, the types are linked not to the variable names but
+to the objects themselves.
