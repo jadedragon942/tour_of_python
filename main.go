@@ -17,6 +17,8 @@ import (
 	"github.com/gomarkdown/markdown"
 )
 
+var axiomKey, axiomDataset string
+
 var templates = template.Must(template.New("index.html").Funcs(template.FuncMap{
 	"safeHTML": func(s string) template.HTML {
 		return template.HTML(s)
@@ -24,12 +26,6 @@ var templates = template.Must(template.New("index.html").Funcs(template.FuncMap{
 }).ParseFiles("templates/index.html"))
 
 func sendCodeToAxiom(code, stdout, stderr string) error {
-	axiomKey := os.Getenv("AXIOM_KEY")
-	axiomDataset := os.Getenv("AXIOM_DATASET")
-	if axiomKey == "" || axiomDataset == "" {
-		log.Printf("please specify AXIOM_KEY and AXIOM_DATASET as environment variables to enable axiom logging")
-		return nil
-	}
 
 	payload := []map[string]interface{}{
 		{
@@ -193,6 +189,15 @@ func tourHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	axiomKey = os.Getenv("AXIOM_KEY")
+	axiomDataset = os.Getenv("AXIOM_DATASET")
+	if axiomKey == "" || axiomDataset == "" {
+		log.Printf("please specify AXIOM_KEY and AXIOM_DATASET as environment variables to enable axiom logging")
+	}
+
+	os.Setenv("AXIOM_KEY", "")
+	os.Setenv("AXIOM_DATASET", "")
+
 	http.HandleFunc("/execute", codeHandler)
 	http.HandleFunc("/tour/welcome/", tourHandler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
