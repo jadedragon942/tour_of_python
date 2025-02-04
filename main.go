@@ -70,7 +70,7 @@ func sendCodeToAxiom(code, stdout, stderr string) error {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Printf("Non-2xx status code received: %d\n", resp.StatusCode)
 		// You could read and log resp.Body for details.
-		return fmt.Errorf("non-2xx status code received: %d\n", resp.StatusCode)
+		return nil
 	}
 
 	return nil
