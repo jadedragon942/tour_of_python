@@ -88,7 +88,7 @@
     <div id="left-panel">
         <h2>{{ .Title }}</h2>
         <div>{{ .MarkdownHTML }}</div>
-	<div align="center"> <a href="#" onclick="gotoPreviousSlide(); return false;">&lt;</a> <b>1/2</b> <a href="#" onclick="gotoNextSlide(); return false;">&gt;</a> </div>
+	<div align="center"> <a href="#" onclick="gotoPreviousSlide(); return false;">&lt;</a> <b><span id="slideCounter"></span></b> <a href="#" onclick="gotoNextSlide(); return false;">&gt;</a> </div>
     </div>
     <div id="right-panel">
         <textarea id="editor">{{ .PythonCode }}</textarea>
@@ -143,6 +143,8 @@
 			gotoNextSlide()
 		}
 	});
+
+	document.getElementById('slideCounter').textContent = getCurrentSlideNumber() + "/" + maxSlides;
     </script>
 </body>
 </html>
