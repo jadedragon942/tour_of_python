@@ -2,6 +2,7 @@
 package main
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -13,6 +14,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/gomarkdown/markdown"
 )
@@ -97,7 +99,14 @@ func executePythonCode(code string) (string, error) {
 		return "", err
 	}
 
-	cmd := exec.Command("python3", "./sandbox.py", tmpfile.Name())
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 1)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "python3", "./sandbox.py", tmpfile.Name())
+	if ctx.Err() == context.DeadlineExceeded {
+		fmt.Println("Command timed out")
+		return "", ctx.Err()
+	}
+
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
