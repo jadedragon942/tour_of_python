@@ -1,5 +1,3 @@
-Every Python program is made up of libraries and functions.
+Python supports many different types. Take a look at the code on the right
+for some examples.
 
-It is common to start programs with a main function.
-
-In this program, we generate a random number from 0 to 9.
