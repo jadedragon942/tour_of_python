@@ -1,4 +1,5 @@
 Functions are reusable blocks of code that perform specific tasks. They can:
+
 - Accept parameters
 - Process data
 - Return results
