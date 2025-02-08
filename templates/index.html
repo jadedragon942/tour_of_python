@@ -138,7 +138,7 @@
             output.textContent += "" + s + "\n";
         }
 
-        pyo.textContent = "Initializing...\n";
+        pyo.textContent = "pyodide: Initializing...\n";
         // init Pyodide
         async function main() {
             let pyodide = await loadPyodide();
@@ -150,9 +150,12 @@
         async function evaluatePython() {
             let pyodide = await pyodideReadyPromise;
             try {
-                let out = pyodide.runPython(code.value);
-                // why is output going to console.log()?
-            } catch (err) {}
+	            const code = editor.getValue();
+                output.textContent = "";
+                pyodide.runPython(code);
+                // TODO: why is output going to console.log()?
+            } catch (err) {
+            }
         }
 
         // define a new console
