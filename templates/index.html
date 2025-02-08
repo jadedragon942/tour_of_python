@@ -49,12 +49,32 @@
             max-height: 200px; /* or any size you prefer */
             overflow-y: auto;
         }
+        .github-fork-ribbon {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            background-color: #151513;
+            color: #fff;
+            text-decoration: none;
+            font: 700 13px "Helvetica Neue", Helvetica, Arial, sans-serif;
+            height: 30px;
+            line-height: 30px;
+            padding: 0 10px;
+            transition: background-color 0.2s;
+            z-index: 1000;
+            margin: 10px;
+            border-radius: 4px;
+        }
+        .github-fork-ribbon:hover {
+            background-color: #444;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
   </head>
   <body>
+    <a href="https://github.com/jadedragon942/tour_of_python" class="github-fork-ribbon" title="Fork me on GitHub">Fork me on GitHub</a>
     <script>
         const maxSlides = {{ .MaxSlides }}; // Now computed from Go
 

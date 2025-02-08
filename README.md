@@ -6,9 +6,8 @@ Currently tested on Debian.
 
 # INSTALL
 
-Install the latest version of Go
+Install the latest version of Go.
 
-Install pyseccomp
 
 ```
 go run main.go
