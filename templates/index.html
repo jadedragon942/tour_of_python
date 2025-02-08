@@ -1,6 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!doctype html>
+<html>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Tour of Python</title>
@@ -50,56 +50,65 @@
             overflow-y: auto;
         }
     </style>
-</head>
-<body>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+  </head>
+  <body>
     <script>
-	const maxSlides = 4; // TODO compute on demand
+        const maxSlides = 4; // TODO compute on demand
 
-	function getCurrentSlideNumber() {
-		const path = window.location.pathname;
+        function getCurrentSlideNumber() {
+            const path = window.location.pathname;
 
-		// Example: /tour/welcome/3
-		// Split on "/" and get the last segment
-		const segments = path.split("/");
-		const lastSegment = segments.pop(); // "3"
+            // Example: /tour/welcome/3
+            // Split on "/" and get the last segment
+            const segments = path.split("/");
+            const lastSegment = segments.pop(); // "3"
 
-		// Convert the last segment to a number
-		const currentPage = parseInt(lastSegment, 10);
+            // Convert the last segment to a number
+            const currentPage = parseInt(lastSegment, 10);
 
-		return currentPage;
-	}
-	function gotoSlide(slideNum) {
-		window.location.href = "/tour/welcome/" + slideNum
-	}
-	function gotoPreviousSlide() {
-		const slideNum = getCurrentSlideNumber() - 1
-		if (slideNum > 0) {
-			gotoSlide(slideNum)
-		}
-	}
-	function gotoNextSlide() {
-		const slideNum = getCurrentSlideNumber() + 1
-		if (slideNum <= maxSlides) {
-			gotoSlide(slideNum)
-		}
-	}
+            return currentPage;
+        }
+        function gotoSlide(slideNum) {
+            window.location.href = "/tour/welcome/" + slideNum
+        }
+        function gotoPreviousSlide() {
+            const slideNum = getCurrentSlideNumber() - 1
+            if (slideNum > 0) {
+                gotoSlide(slideNum)
+            }
+        }
+        function gotoNextSlide() {
+            const slideNum = getCurrentSlideNumber() + 1
+            if (slideNum <= maxSlides) {
+                gotoSlide(slideNum)
+            }
+        }
 
+        document.addEventListener("keydown", function(event) {
+            // Check if the key pressed is "PageUp" or "PageDown"
+            if (event.key === "PageUp") {
+                gotoPreviousSlide()
+            } else if (event.key === "PageDown") {
+                gotoNextSlide()
+            }
+        });
     </script>
     <div id="left-panel">
         <h2>{{ .Title }}</h2>
         <div>{{ .MarkdownHTML }}</div>
-	<div align="center"> <a href="#" onclick="gotoPreviousSlide(); return false;">&lt;</a> <b><span id="slideCounter"></span></b> <a href="#" onclick="gotoNextSlide(); return false;">&gt;</a> </div>
+    	<div align="center"> <a href="#" onclick="gotoPreviousSlide(); return false;">&lt;</a> <b><span id="slideCounter"></span></b> <a href="#" onclick="gotoNextSlide(); return false;">&gt;</a> </div>
     </div>
     <div id="right-panel">
-        <textarea id="editor">{{ .PythonCode }}</textarea>
-        <button id="submit-btn">Submit</button>
+        <textarea id="code">{{ .PythonCode }}</textarea>
+        <button id="submit-btn" onclick="evaluatePython();">Submit</button>
         <div id="output"></div>
+        <div id="pyo"></div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
     <script>
-        const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+        const editor = CodeMirror.fromTextArea(document.getElementById('code'), {
             mode: "python",
             lineNumbers: true,
             indentUnit: 4,
@@ -117,34 +126,38 @@
             }
         });
 
-	document.getElementById('submit-btn').addEventListener('click', function() {
-		const code = editor.getValue();
-		fetch('/execute', {
-			method: 'POST',
-			headers: { 'Content-Type': 'text/plain' },
-			body: code
-		})
-		.then(response => response.text())
-		.then(result => {
-			document.getElementById('output').textContent = result;
-		})
-		.catch(error => {
-			document.getElementById('output').textContent = 'Error: ' + error;
-		});
-	});
+        document.getElementById('slideCounter').textContent = getCurrentSlideNumber() + "/" + maxSlides;
 
-	document.addEventListener("keydown", function(event) {
-		// Check if the key pressed is "PageUp" or "PageDown"
-		if (event.key === "PageUp") {
-			// Redirect to a previous page or any other URL
-			gotoPreviousSlide()
-		} else if (event.key === "PageDown") {
-			// Redirect to a next page or any other URL
-			gotoNextSlide()
-		}
-	});
-
-	document.getElementById('slideCounter').textContent = getCurrentSlideNumber() + "/" + maxSlides;
     </script>
-</body>
+
+    <script>
+      const output = document.getElementById("output");
+      const code = document.getElementById("code");
+      const pyo = document.getElementById("pyo");
+
+
+      function addToOutput(s) {
+        output.textContent = "\n" + s + "\n";
+      }
+
+      pyo.textContent = "Initializing...\n";
+      // init Pyodide
+      async function main() {
+        let pyodide = await loadPyodide();
+        pyo.textContent += "Ready!\n";
+        return pyodide;
+      }
+      let pyodideReadyPromise = main();
+
+      async function evaluatePython() {
+        let pyodide = await pyodideReadyPromise;
+        try {
+          let out = pyodide.runPython(code.value);
+          addToOutput(out);
+        } catch (err) {
+          addToOutput("Error: " + err);
+        }
+      }
+    </script>
+  </body>
 </html>

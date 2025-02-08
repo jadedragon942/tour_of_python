@@ -1,149 +1,23 @@
 // main.go
 package main
 import (
-	"bytes"
-	"context"
-	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"time"
 
 	"github.com/gomarkdown/markdown"
 )
-
-var axiomKey, axiomDataset string
 
 var templates = template.Must(template.New("index.html").Funcs(template.FuncMap{
 	"safeHTML": func(s string) template.HTML {
 		return template.HTML(s)
 	},
 }).ParseFiles("templates/index.html"))
-
-func sendCodeToAxiom(code, stdout, stderr string) error {
-
-	payload := []map[string]interface{}{
-		{
-			"data": map[string]string{
-				"code":   code,
-				"stdout": stdout,
-				"stderr": stderr,
-			},
-		},
-	}
-
-	// Marshal the payload into JSON.
-	body, err := json.Marshal(payload)
-	if err != nil {
-		log.Printf("Error marshaling JSON: %v", err)
-		return fmt.Errorf("Error marshaling JSON: %v", err)
-	}
-
-	// Construct the ingest URL.
-	url := fmt.Sprintf("https://api.axiom.co/v1/datasets/%s/ingest", axiomDataset)
-
-	// Create a new HTTP request.
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
-	if err != nil {
-		log.Printf("Error creating request: %v", err)
-		return fmt.Errorf("error creating request: %v", err)
-	}
-
-	// Set the required headers: Authorization and Content-Type.
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", axiomKey))
-	req.Header.Set("Content-Type", "application/json")
-
-	// Send the request using the default HTTP client (you could configure your own).
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Printf("Error performing request: %v", err)
-		return fmt.Errorf("error performing request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Optionally, handle non-OK status codes or read response body here.
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		log.Printf("Non-2xx status code received: %d\n", resp.StatusCode)
-		// You could read and log resp.Body for details.
-		return nil
-	}
-
-	return nil
-}
-
-func executePythonCode(code string) (string, error) {
-	log.Printf("Executing Python Code:\n%s", code)
-
-	err := sendCodeToAxiom(code, "", "")
-	if err != nil {
-		return "", err
-	}
-
-	tmpfile, err := os.CreateTemp("", "code-*.py")
-	if err != nil {
-		return "", err
-	}
-	defer os.Remove(tmpfile.Name())
-
-	if _, err := tmpfile.Write([]byte(code)); err != nil {
-		return "", err
-	}
-	if err := tmpfile.Close(); err != nil {
-		return "", err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 1)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, "python3", "./sandbox.py", tmpfile.Name())
-	if ctx.Err() == context.DeadlineExceeded {
-		fmt.Println("Command timed out")
-		return "", ctx.Err()
-	}
-
-	var out, stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-
-	log.Printf("Stdout:\n%s", out.String())
-	log.Printf("Stderr:\n%s", stderr.String())
-
-	err = sendCodeToAxiom(code, out.String(), stderr.String())
-	if err != nil {
-		return "", err
-	}
-
-	if err != nil {
-		return stderr.String(), err
-	}
-	return out.String(), nil
-}
-
-func codeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, "Unable to read request body", http.StatusBadRequest)
-			return
-		}
-
-		output, err := executePythonCode(string(body))
-		if err != nil {
-			http.Error(w, output, http.StatusInternalServerError)
-			return
-		}
-		fmt.Fprint(w, output)
-	} else {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-	}
-}
 
 func tourHandler(w http.ResponseWriter, r *http.Request) {
 	re := regexp.MustCompile(`/tour/welcome/(\d+)`)
@@ -198,16 +72,6 @@ func tourHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	axiomKey = os.Getenv("AXIOM_KEY")
-	axiomDataset = os.Getenv("AXIOM_DATASET")
-	if axiomKey == "" || axiomDataset == "" {
-		log.Printf("please specify AXIOM_KEY and AXIOM_DATASET as environment variables to enable axiom logging")
-	}
-
-	os.Setenv("AXIOM_KEY", "")
-	os.Setenv("AXIOM_DATASET", "")
-
-	http.HandleFunc("/execute", codeHandler)
 	http.HandleFunc("/tour/welcome/", tourHandler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/tour/welcome/1", http.StatusFound)
