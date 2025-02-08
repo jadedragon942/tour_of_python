@@ -1,5 +1,6 @@
 // main.go
 package main
+
 import (
 	"fmt"
 	"html/template"
@@ -18,6 +19,25 @@ var templates = template.Must(template.New("index.html").Funcs(template.FuncMap{
 		return template.HTML(s)
 	},
 }).ParseFiles("templates/index.html"))
+
+func countSlides() int {
+	maxSlide := 0
+	entries, err := os.ReadDir("slides")
+	if err != nil {
+		return 0
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			if num, err := strconv.Atoi(entry.Name()); err == nil {
+				if num > maxSlide {
+					maxSlide = num
+				}
+			}
+		}
+	}
+	return maxSlide
+}
 
 func tourHandler(w http.ResponseWriter, r *http.Request) {
 	re := regexp.MustCompile(`/tour/welcome/(\d+)`)
@@ -62,10 +82,12 @@ func tourHandler(w http.ResponseWriter, r *http.Request) {
 		Title        string
 		MarkdownHTML template.HTML
 		PythonCode   string
+		MaxSlides    int
 	}{
 		Title:        string(titleContent),
 		MarkdownHTML: template.HTML(htmlContent),
 		PythonCode:   string(pythonContent),
+		MaxSlides:    countSlides(),
 	}
 
 	templates.ExecuteTemplate(w, "index.html", data)

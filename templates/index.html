@@ -56,7 +56,7 @@
   </head>
   <body>
     <script>
-        const maxSlides = 4; // TODO compute on demand
+        const maxSlides = {{ .MaxSlides }}; // Now computed from Go
 
         function getCurrentSlideNumber() {
             const path = window.location.pathname;
