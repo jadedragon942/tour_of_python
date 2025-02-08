@@ -12,8 +12,6 @@ import (
 	"strconv"
 
 	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
 )
 
 var templates = template.Must(template.New("index.html").Funcs(template.FuncMap{
@@ -72,31 +70,13 @@ func tourHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Preprocess markdown content to ensure proper list formatting
-	markdownRe := regexp.MustCompile(`(?m)^-([^\s])`)
-	processedContent := markdownRe.ReplaceAll(markdownContent, []byte("- $1"))
-
 	pythonContent, err := os.ReadFile(pythonPath)
 	if err != nil {
 		http.Error(w, "Python script file not found", http.StatusNotFound)
 		return
 	}
 
-	// Create markdown parser with extensions
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
-	p := parser.NewWithExtensions(extensions)
-
-	// Create HTML renderer with extensions
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{
-		Flags: htmlFlags,
-	}
-	renderer := html.NewRenderer(opts)
-
-	// Parse and render markdown with custom renderer
-	parsedContent := p.Parse(processedContent)
-	htmlContent := markdown.Render(parsedContent, renderer)
-
+	htmlContent := markdown.ToHTML(markdownContent, nil, nil)
 	data := struct {
 		Title        string
 		MarkdownHTML template.HTML
