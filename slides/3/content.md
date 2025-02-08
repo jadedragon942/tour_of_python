@@ -13,10 +13,11 @@ to the objects themselves.
 Lists are ordered collections of items. They can contain any type of data and are created using square brackets `[]`.
 
 Common list operations:
-* Create a list with `[]`
-* Add items with `append()`
-* Access items with index `[0]`
-* Get length with `len()`
-* Slice lists with `[start:end]`
+
+- Create a list with `[]`
+- Add items with `append()`
+- Access items with index `[0]`
+- Get length with `len()`
+- Slice lists with `[start:end]`
 
 Try this example:
