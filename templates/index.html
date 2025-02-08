@@ -127,37 +127,57 @@
         });
 
         document.getElementById('slideCounter').textContent = getCurrentSlideNumber() + "/" + maxSlides;
-
     </script>
 
     <script>
-      const output = document.getElementById("output");
-      const code = document.getElementById("code");
-      const pyo = document.getElementById("pyo");
+        const output = document.getElementById("output");
+        const code = document.getElementById("code");
+        const pyo = document.getElementById("pyo");
 
-
-      function addToOutput(s) {
-        output.textContent = "\n" + s + "\n";
-      }
-
-      pyo.textContent = "Initializing...\n";
-      // init Pyodide
-      async function main() {
-        let pyodide = await loadPyodide();
-        pyo.textContent += "Ready!\n";
-        return pyodide;
-      }
-      let pyodideReadyPromise = main();
-
-      async function evaluatePython() {
-        let pyodide = await pyodideReadyPromise;
-        try {
-          let out = pyodide.runPython(code.value);
-          addToOutput(out);
-        } catch (err) {
-          addToOutput("Error: " + err);
+        function addToOutput(s) {
+            output.textContent += "" + s + "\n";
         }
-      }
+
+        pyo.textContent = "Initializing...\n";
+        // init Pyodide
+        async function main() {
+            let pyodide = await loadPyodide();
+            pyo.textContent += "Ready!\n";
+            return pyodide;
+        }
+        let pyodideReadyPromise = main();
+
+        async function evaluatePython() {
+            let pyodide = await pyodideReadyPromise;
+            try {
+                let out = pyodide.runPython(code.value);
+                // why is output going to console.log()?
+            } catch (err) {}
+        }
+
+        // define a new console
+        var console=(function(oldCons){
+        return {
+            log: function(text){
+                oldCons.log(text);
+                addToOutput(text);
+            },
+            info: function (text) {
+                oldCons.info(text);
+                addToOutput(text);
+            },
+            warn: function (text) {
+                oldCons.warn(text);
+                addToOutput(text);
+            },
+            error: function (text) {
+                oldCons.error(text);
+                addToOutput(text);
+            }
+        };
+        }(window.console));
+
+        window.console = console;
     </script>
   </body>
 </html>
